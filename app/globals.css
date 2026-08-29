@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+:root {
+  /* Neutrals */
+  --ink: #16233b;
+  --ink-2: #5b6b86;
+  --ink-3: #94a2bb;
+  --line: #e8edf5;
+  --line-2: #dfe5ef;
+  --surface: #ffffff;
+  --bg: #f4f6fb;
+
+  /* Brand & action */
+  --primary: #7d5cf2;
+  --primary-700: #5f41c6;
+  --primary-tint: #ece4fd;
+
+  /* Semantic */
+  --green: #10a87a;
+  --green-700: #0c8662;
+  --coral: #f4663d;
+  --coral-700: #d44b27;
+  --amber: #f3a32a;
+
+  /* Gradient base */
+  --grad-top: #2c1664;
+  --grad-mid: #1d1147;
+  --grad-bottom: #3c1962;
+
+  /* Gradient glows */
+  --glow-lavender: #9e8afc;
+  --glow-magenta: #e460d2;
+  --glow-violet: #8056ec;
+  --glow-centre: #d4beff;
+
+  /* Deep detail card */
+  --deep-card-top: #37235f;
+  --deep-card-bottom: #241646;
+  --coral-light: #ff9d7e;
+
+  /* Category colors */
+  --cat-car: #1f54c9;
+  --cat-biz: #6a32d6;
+  --cat-donate: #d9305f;
+  --cat-host: #e07a12;
+  --cat-phone: #0c93a8;
+  --cat-home: #128a52;
+  --cat-savings: #c79412;
+
+  /* Tokens */
+  --radius-card: 22px;
+  --radius-pill: 999px;
+  --radius-tile: 13px;
+  --radius-button: 12px;
+  --shadow-card: 0 12px 34px rgba(28, 10, 58, 0.22);
+  --shadow-fab: 0 8px 14px rgba(125, 92, 242, 0.5);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-surface: var(--surface);
+  --color-bg: var(--bg);
+
+  --color-primary: var(--primary);
+  --color-primary-700: var(--primary-700);
+  --color-primary-tint: var(--primary-tint);
+
+  --color-green: var(--green);
+  --color-green-700: var(--green-700);
+  --color-coral: var(--coral);
+  --color-coral-700: var(--coral-700);
+  --color-coral-light: var(--coral-light);
+  --color-amber: var(--amber);
+
+  --color-cat-car: var(--cat-car);
+  --color-cat-biz: var(--cat-biz);
+  --color-cat-donate: var(--cat-donate);
+  --color-cat-host: var(--cat-host);
+  --color-cat-phone: var(--cat-phone);
+  --color-cat-home: var(--cat-home);
+  --color-cat-savings: var(--cat-savings);
+
+  --font-heebo: var(--font-heebo);
+  --font-assistant: var(--font-assistant);
+
+  --radius-card: var(--radius-card);
+  --radius-pill: var(--radius-pill);
+  --radius-tile: var(--radius-tile);
+  --radius-button: var(--radius-button);
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-assistant), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.num {
+  font-family: var(--font-heebo), sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+.app-gradient-bg {
+  background: linear-gradient(162deg, var(--grad-top), var(--grad-mid) 52%, var(--grad-bottom));
+  position: relative;
+  overflow: hidden;
+}
+
+.app-gradient-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 82% 4%, color-mix(in srgb, var(--glow-lavender) 60%, transparent), transparent 50%),
+    radial-gradient(120% 90% at 6% 106%, color-mix(in srgb, var(--glow-magenta) 55%, transparent), transparent 55%);
+}
+
+.card-deep {
+  background: linear-gradient(180deg, var(--deep-card-top), var(--deep-card-bottom));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.form-input {
+  background: #e7e1f3;
+  border: 1px solid #d4c8ea;
+  border-radius: var(--radius-button);
+  padding: 12px 16px;
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+  font-size: 15px;
+}
+
+.form-input::placeholder {
+  color: #8b7fa6;
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+}
