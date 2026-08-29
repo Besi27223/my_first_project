@@ -3,7 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/signup", "/manifest.webmanifest"];
 
-export async function middleware(request: NextRequest) {
+// Next.js 16's replacement for middleware.ts. Deliberately kept on this
+// convention (not middleware.ts): Proxy defaults to the Node.js runtime,
+// while middleware.ts still defaults to the Edge Runtime — and
+// @supabase/ssr's createServerClient pulls in @supabase/realtime-js's
+// WebSocket dependency chain at *import time*, unconditionally, which
+// references Node-only globals (__dirname) the Edge Runtime doesn't have.
+// See https://github.com/supabase/supabase/issues/21009.
+export async function proxy(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
