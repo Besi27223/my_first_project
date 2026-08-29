@@ -4,16 +4,22 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/login", "/signup", "/manifest.webmanifest"];
 
 export async function middleware(request: NextRequest) {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true" || !supabaseUrl || !supabaseAnonKey) {
     // Demo mode runs without a Supabase project at all — never touch it.
+    // Also fail open (rather than crash) when real mode is misconfigured:
+    // a deploy that lands before Supabase env vars are set should still
+    // serve pages instead of a 500 on every single route.
     return NextResponse.next({ request });
   }
 
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
