@@ -14,8 +14,21 @@ const MONTH_NAMES = [
 
 const fmt = (n: number) => n.toLocaleString("he-IL", { maximumFractionDigits: 0 });
 
+// Raw text per field, so the input can sit empty or mid-edit without the
+// component fighting the user by forcing a parsed "0" back in on every
+// keystroke (that's what caused values like "1920"/"0192" when replacing
+// the default). Only coerced to a number where actually calculated.
+type RawSalaryInputs = Record<keyof SalaryInputs, string>;
+
+const DEFAULT_RAW_INPUTS: RawSalaryInputs = {
+  hourlyRate: String(DEFAULT_SALARY_INPUTS.hourlyRate),
+  hoursPerMonth: String(DEFAULT_SALARY_INPUTS.hoursPerMonth),
+  additionalIncome: String(DEFAULT_SALARY_INPUTS.additionalIncome),
+  creditPoints: String(DEFAULT_SALARY_INPUTS.creditPoints),
+};
+
 export default function CalcPage() {
-  const [inputs, setInputs] = useState<SalaryInputs>(DEFAULT_SALARY_INPUTS);
+  const [rawInputs, setRawInputs] = useState<RawSalaryInputs>(DEFAULT_RAW_INPUTS);
   const [taxYear, setTaxYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [income, setIncome] = useState<MonthlyIncome[]>([]);
@@ -24,6 +37,15 @@ export default function CalcPage() {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const inputs: SalaryInputs = useMemo(
+    () => ({
+      hourlyRate: Number(rawInputs.hourlyRate) || 0,
+      hoursPerMonth: Number(rawInputs.hoursPerMonth) || 0,
+      additionalIncome: Number(rawInputs.additionalIncome) || 0,
+      creditPoints: Number(rawInputs.creditPoints) || 0,
+    }),
+    [rawInputs],
+  );
   const result = useMemo(() => calculateSalary(inputs), [inputs]);
 
   useEffect(() => {
@@ -41,9 +63,8 @@ export default function CalcPage() {
   const grossToSave = grossOverride ?? result.grossMonthly.toFixed(2);
   const netToSave = netOverride ?? result.netMonthlyExpected.toFixed(2);
 
-  function set<K extends keyof SalaryInputs>(key: K, value: string) {
-    const num = Number(value);
-    setInputs((prev) => ({ ...prev, [key]: Number.isFinite(num) ? num : 0 }));
+  function set(key: keyof SalaryInputs, value: string) {
+    setRawInputs((prev) => ({ ...prev, [key]: value }));
   }
 
   async function handleSaveIncome() {
@@ -72,18 +93,18 @@ export default function CalcPage() {
     <>
       <AppHeader title="מחשבון שכר" subtitle="שכר נטו חודשי משוער" />
 
-      <div className="px-[18px] flex flex-col gap-4 pb-6">
+      <div className="px-[18px] flex flex-col gap-4 pb-32">
         <section className="card-deep rounded-[var(--radius-card)] p-4 text-white">
           <h2 className="font-[family-name:var(--font-heebo)] font-bold text-[15px] mb-3">נתוני קלט</h2>
           <div className="grid grid-cols-2 gap-3">
-            <CalcInput label="שכר לשעה (₪)" value={inputs.hourlyRate} onChange={(v) => set("hourlyRate", v)} />
-            <CalcInput label="שעות לחודש" value={inputs.hoursPerMonth} onChange={(v) => set("hoursPerMonth", v)} />
-            <CalcInput label="הכנסה נוספת (₪)" value={inputs.additionalIncome} onChange={(v) => set("additionalIncome", v)} />
-            <CalcInput label="נקודות זיכוי" value={inputs.creditPoints} onChange={(v) => set("creditPoints", v)} step="0.25" />
+            <CalcInput label="שכר לשעה (₪)" value={rawInputs.hourlyRate} onChange={(v) => set("hourlyRate", v)} />
+            <CalcInput label="שעות לחודש" value={rawInputs.hoursPerMonth} onChange={(v) => set("hoursPerMonth", v)} />
+            <CalcInput label="הכנסה נוספת (₪)" value={rawInputs.additionalIncome} onChange={(v) => set("additionalIncome", v)} />
+            <CalcInput label="נקודות זיכוי" value={rawInputs.creditPoints} onChange={(v) => set("creditPoints", v)} step="0.25" />
           </div>
           <button
             type="button"
-            onClick={() => setInputs(DEFAULT_SALARY_INPUTS)}
+            onClick={() => setRawInputs(DEFAULT_RAW_INPUTS)}
             className="mt-3 text-[12px] font-semibold text-white/70 underline"
           >
             איפוס לברירת מחדל
@@ -215,21 +236,33 @@ function CalcInput({
   step = "1",
 }: {
   label: string;
-  value: number;
+  value: string;
   onChange: (v: string) => void;
   step?: string;
 }) {
   return (
     <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-white/85">
       {label}
-      <input
-        type="number"
-        inputMode="decimal"
-        step={step}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="form-input num"
-      />
+      <div className="relative">
+        <input
+          type="number"
+          inputMode="decimal"
+          step={step}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="form-input num pe-8"
+        />
+        {value !== "" && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            aria-label="ניקוי שדה"
+            className="absolute inset-y-0 end-2 flex items-center text-ink-3"
+          >
+            ✕
+          </button>
+        )}
+      </div>
     </label>
   );
 }

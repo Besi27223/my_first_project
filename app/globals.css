@@ -113,7 +113,6 @@ body {
 .app-gradient-bg {
   background: linear-gradient(162deg, var(--grad-top), var(--grad-mid) 52%, var(--grad-bottom));
   position: relative;
-  overflow: hidden;
 }
 
 .app-gradient-bg::after {

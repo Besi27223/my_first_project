@@ -82,7 +82,7 @@ export default function NewInvoicePage() {
     <>
       <AppHeader title="חשבונית חדשה" subtitle="תיעוד הוצאה עם קבלה" />
 
-      <form onSubmit={handleSubmit} className="px-[18px] flex flex-col gap-3 pb-6">
+      <form onSubmit={handleSubmit} className="px-[18px] flex flex-col gap-3 pb-32">
         <Field label="שם ספק / מוצר *">
           <input
             value={description}
@@ -217,7 +217,7 @@ export default function NewInvoicePage() {
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            rows={3}
+            rows={2}
             className="form-input resize-none"
             placeholder="הערות לרואה החשבון"
           />

@@ -26,7 +26,7 @@ export default function ReportsPage() {
     <>
       <AppHeader title="דוחות וסיכומים" subtitle="תמונת מצב שנתית" />
 
-      <div className="px-[18px] flex flex-col gap-4 pb-6">
+      <div className="px-[18px] flex flex-col gap-4 pb-32">
         <div className="flex items-center justify-between text-white">
           <span className="text-[13px] font-semibold text-white/85">שנת מס</span>
           <select
