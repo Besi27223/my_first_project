@@ -14,15 +14,16 @@ interface NavItem {
 }
 
 const ITEMS: NavItem[] = [
-  { href: "/reports", active: NAV_ICONS.chartActive, inactive: NAV_ICONS.chartInactive, label: "דוחות", fab: false },
-  { href: "/list", active: NAV_ICONS.listActive, inactive: NAV_ICONS.listInactive, label: "חשבוניות", fab: false },
-  { href: "/invoice/new", active: null, inactive: null, label: "חדש", fab: true },
-  { href: "/calc", active: NAV_ICONS.calcActive, inactive: NAV_ICONS.calcInactive, label: "מחשבון", fab: false },
   { href: "/invoice/new", active: NAV_ICONS.plusActive, inactive: NAV_ICONS.plusInactive, label: "הוספה", fab: false },
+  { href: "/calc", active: NAV_ICONS.calcActive, inactive: NAV_ICONS.calcInactive, label: "מחשבון", fab: false },
+  { href: "/invoice/new", active: null, inactive: null, label: "חדש", fab: true },
+  { href: "/list", active: NAV_ICONS.listActive, inactive: NAV_ICONS.listInactive, label: "חשבוניות", fab: false },
+  { href: "/reports", active: NAV_ICONS.chartActive, inactive: NAV_ICONS.chartInactive, label: "דוחות", fab: false },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const onInvoiceTab = pathname.startsWith("/invoice");
 
   return (
     <nav
@@ -33,6 +34,8 @@ export default function BottomNav() {
         const isActive = pathname === item.href || (item.href === "/invoice/new" && pathname.startsWith("/invoice"));
 
         if (item.fab) {
+          if (!onInvoiceTab) return <span key={`fab-${i}`} className="min-w-14" />;
+
           return (
             <Link
               key={`fab-${i}`}
