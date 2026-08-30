@@ -25,9 +25,9 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
 
   return (
     <CurrentProfileProvider>
-      <div className="min-h-dvh flex flex-col">
-        <div className="app-gradient-bg flex-1 flex flex-col">
-          <div className="flex-1 flex flex-col">{children}</div>
+      <div className="h-dvh flex flex-col">
+        <div className="app-gradient-bg flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0">{children}</div>
         </div>
         <BottomNav />
       </div>
