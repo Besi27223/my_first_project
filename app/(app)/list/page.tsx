@@ -46,7 +46,7 @@ export default function ListPage() {
   }, [expenses, taxYear, categoryId, query]);
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col min-h-0">
       <AppHeader title="חשבוניות שנסרקו" subtitle={`${filtered.length} רשומות`} />
 
       <div className="px-[18px] flex flex-col gap-3">
@@ -90,7 +90,7 @@ export default function ListPage() {
         </div>
       </div>
 
-      <div className="mt-4 bg-surface rounded-t-[24px] flex-1">
+      <div className="mt-4 bg-surface rounded-t-[24px] flex-1 min-h-0 overflow-y-auto pb-20">
         {loading ? (
           <p className="text-center text-ink-3 py-10 text-sm">טוען...</p>
         ) : filtered.length === 0 ? (

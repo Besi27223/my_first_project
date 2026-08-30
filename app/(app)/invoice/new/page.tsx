@@ -34,25 +34,23 @@ export default function NewInvoicePage() {
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
 
-  function onFileChosen(f: File | null) {
-    setFile(f);
-    setPreview(f && f.type.startsWith("image/") ? URL.createObjectURL(f) : null);
-  }
-
-  function validate(): string | null {
+  function validate(f: File | null): string | null {
     if (!description.trim()) return "יש להזין שם ספק/מוצר";
     if (description.length > 100) return "שם ספק/מוצר ארוך מדי (עד 100 תווים)";
     if (!categoryId) return "יש לבחור קטגוריית הוצאה";
     const amt = Number(amount);
     if (!amount || !Number.isFinite(amt) || amt === 0) return "יש להזין סכום שונה מאפס";
     if (amt < -999999 || amt > 999999) return "הסכום מחוץ לטווח המותר";
-    if (!file) return "יש לצרף תמונת קבלה או קובץ מצורף";
+    if (!f) return "יש לצרף תמונת קבלה או קובץ מצורף";
     return null;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const validationError = validate();
+  // Attaching a receipt (camera or file) is the save action — there's no
+  // separate submit button. If other fields are still missing, the error
+  // shows and a small retry link re-attempts with the same attached file
+  // once those fields are filled in.
+  async function attemptSubmit(f: File) {
+    const validationError = validate(f);
     if (validationError) {
       setError(validationError);
       return;
@@ -68,7 +66,7 @@ export default function NewInvoicePage() {
         amount: Number(amount),
         categoryId,
         notes,
-        file,
+        file: f,
       });
       router.replace("/list");
     } catch (err) {
@@ -78,11 +76,17 @@ export default function NewInvoicePage() {
     }
   }
 
+  function onFileChosen(f: File | null) {
+    setFile(f);
+    setPreview(f && f.type.startsWith("image/") ? URL.createObjectURL(f) : null);
+    if (f) attemptSubmit(f);
+  }
+
   return (
     <>
       <AppHeader title="חשבונית חדשה" subtitle="תיעוד הוצאה עם קבלה" />
 
-      <form onSubmit={handleSubmit} className="px-[18px] flex flex-col gap-3 pb-32">
+      <div className="px-[18px] flex flex-col gap-3 pb-32">
         <Field label="שם ספק / מוצר *">
           <input
             value={description}
@@ -168,7 +172,7 @@ export default function NewInvoicePage() {
           </div>
         )}
 
-        <Field label="תמונת קבלה או קובץ מצורף *">
+        <Field label="תמונת קבלה או קובץ מצורף * (שומר אוטומטית)">
           <div className="flex gap-2">
             <button
               type="button"
@@ -223,16 +227,23 @@ export default function NewInvoicePage() {
           />
         </Field>
 
-        {error && <p className="text-coral-light text-sm font-semibold">{error}</p>}
+        {saving && <p className="text-white/80 text-sm font-semibold">שומר/ת...</p>}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="mt-2 rounded-[var(--radius-button)] bg-primary text-white font-bold py-3.5 disabled:opacity-60"
-        >
-          {saving ? "שומר/ת..." : "שמירת הוצאה"}
-        </button>
-      </form>
+        {error && (
+          <div className="rounded-[var(--radius-button)] bg-coral/15 border border-coral/30 px-3 py-2">
+            <p className="text-coral-light text-sm font-semibold">{error}</p>
+            {file && (
+              <button
+                type="button"
+                onClick={() => attemptSubmit(file)}
+                className="mt-1 text-white text-[13px] font-bold underline"
+              >
+                נסה שוב לשמור
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </>
   );
 }
