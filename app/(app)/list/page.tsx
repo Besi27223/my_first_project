@@ -22,15 +22,22 @@ export default function ListPage() {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
     setLoading(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
+    setLoadError(null);
     Promise.all([listExpenses(), listCategories()])
       .then(([e, c]) => {
         setExpenses(e);
         setCategories(c);
+      })
+      .catch((err) => {
+        console.error("list page: failed to load expenses/categories", err);
+        setLoadError(err instanceof Error ? err.message : "טעינת הנתונים נכשלה");
       })
       .finally(() => setLoading(false));
   }, [reloadKey]);
@@ -50,6 +57,12 @@ export default function ListPage() {
       <AppHeader title="חשבוניות שנסרקו" subtitle={`${filtered.length} רשומות`} />
 
       <div className="px-[18px] flex flex-col gap-3">
+        {loadError && (
+          <div className="rounded-[var(--radius-button)] bg-coral/15 border border-coral/30 px-3 py-2">
+            <p className="text-coral-light text-sm font-semibold">{loadError}</p>
+          </div>
+        )}
+
         <div className="flex gap-2">
           <input
             value={query}
