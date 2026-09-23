@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import AppHeader from "@/components/AppHeader";
+import UploadOnlyGuard from "@/components/UploadOnlyGuard";
 import { categoryListIcon, categoryTagIcon } from "@/lib/icons";
 import { deleteExpense, listCategories, listExpenses, updateExpense } from "@/lib/data";
 import { getReceiptUrl } from "@/lib/receiptUrl";
@@ -28,7 +29,6 @@ export default function ListPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
     setLoading(true);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
     setLoadError(null);
     Promise.all([listExpenses(), listCategories()])
       .then(([e, c]) => {
@@ -54,6 +54,7 @@ export default function ListPage() {
 
   return (
     <div className="flex-1 flex flex-col">
+      <UploadOnlyGuard />
       <AppHeader title="חשבוניות שנסרקו" subtitle={`${filtered.length} רשומות`} />
 
       <div className="px-[18px] flex flex-col gap-3">

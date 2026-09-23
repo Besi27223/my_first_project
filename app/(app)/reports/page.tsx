@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import AppHeader from "@/components/AppHeader";
+import UploadOnlyGuard from "@/components/UploadOnlyGuard";
 import { createIncome, getReportChart, getReportSummary, listIncome } from "@/lib/data";
 import { useCurrentProfile, isDemoMode } from "@/lib/useCurrentProfile";
 import type { MonthlyIncome, ReportChartRow, ReportSummary } from "@/lib/types/database";
@@ -66,6 +67,7 @@ export default function ReportsPage() {
 
   return (
     <>
+      <UploadOnlyGuard />
       <AppHeader title="דוחות וסיכומים" subtitle="תמונת מצב שנתית" />
 
       <div className="px-[18px] flex flex-col gap-2.5 pb-32">

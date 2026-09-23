@@ -23,13 +23,15 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
     }
   }
 
+  const uploadOnly = process.env.NEXT_PUBLIC_UPLOAD_ONLY === "true";
+
   return (
     <CurrentProfileProvider>
       <div className="min-h-dvh flex flex-col">
         <div className="app-gradient-bg flex-1 flex flex-col">
           <div className="flex-1 flex flex-col">{children}</div>
         </div>
-        <BottomNav />
+        {!uploadOnly && <BottomNav />}
       </div>
     </CurrentProfileProvider>
   );
