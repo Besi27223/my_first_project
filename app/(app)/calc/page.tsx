@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import AppHeader from "@/components/AppHeader";
+import UploadOnlyGuard from "@/components/UploadOnlyGuard";
 import { calculateSalary, DEFAULT_SALARY_INPUTS, type SalaryInputs } from "@/lib/salary";
 
 const fmt = (n: number) => n.toLocaleString("he-IL", { maximumFractionDigits: 0 });
@@ -39,6 +40,7 @@ export default function CalcPage() {
 
   return (
     <>
+      <UploadOnlyGuard />
       <AppHeader title="מחשבון שכר" subtitle="שכר נטו חודשי משוער" />
 
       <div className="px-[18px] flex flex-col gap-3 pb-32">
