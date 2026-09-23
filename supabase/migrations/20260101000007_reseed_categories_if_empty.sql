@@ -6,7 +6,7 @@
 -- exist by name, so it's safe to run even if the table is already populated.
 
 insert into expense_categories (name, short_name, tax_pct, deduction_type, icon_key, color_hex, sort_order)
-select v.name, v.short_name, v.tax_pct, v.deduction_type, v.icon_key, v.color_hex, v.sort_order
+select v.name, v.short_name, v.tax_pct, v.deduction_type::deduction_type, v.icon_key, v.color_hex, v.sort_order
 from (
   values
     ('עסק / השכלה', 'עסק', 1.00, 'reduces_taxable_profit', 'biz', '#6a32d6', 1),
