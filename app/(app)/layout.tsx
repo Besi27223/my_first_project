@@ -21,6 +21,15 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
     if (!user) {
       redirect("/login");
     }
+
+    // Authenticated but no household/profile yet — either mid-signup (email
+    // confirmation pending), or a household-creation step that never
+    // completed (e.g. it failed before the user had a session at all).
+    // Send them to finish that instead of leaving the app broken/empty.
+    const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+    if (!profile) {
+      redirect("/onboarding");
+    }
   }
 
   const uploadOnly = process.env.NEXT_PUBLIC_UPLOAD_ONLY === "true";

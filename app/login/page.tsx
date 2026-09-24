@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { clearPendingSignup, completeHouseholdSetup, readPendingSignup } from "@/lib/pendingSignup";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,36 +17,16 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     const supabase = createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
     if (error) {
-      setLoading(false);
       setError("אימייל או סיסמה שגויים");
       return;
     }
-
-    // If signup happened while email confirmation was still pending, the
-    // household/profile couldn't be created then — finish it now that
-    // there's a real authenticated session.
-    const pending = readPendingSignup();
-    if (pending && data.user) {
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", data.user.id)
-        .maybeSingle();
-      if (!existingProfile) {
-        const rpcError = await completeHouseholdSetup(supabase, pending);
-        if (rpcError) {
-          setLoading(false);
-          setError(rpcError);
-          return;
-        }
-      } else {
-        clearPendingSignup();
-      }
-    }
-
-    setLoading(false);
+    // If this account was never fully signed up (e.g. no household/profile
+    // yet — signup interrupted by email confirmation, or something failed
+    // before a session existed), the (app) layout's server-side check
+    // redirects to /onboarding to finish it before reaching /reports.
     router.replace("/reports");
     router.refresh();
   }

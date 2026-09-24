@@ -4,15 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { completeHouseholdSetup, savePendingSignup, type PendingSignup } from "@/lib/pendingSignup";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"owner" | "partner">("owner");
-  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [pendingConfirmation, setPendingConfirmation] = useState(false);
@@ -24,35 +20,23 @@ export default function SignupPage() {
     const supabase = createClient();
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+    setLoading(false);
     if (signUpError) {
-      setLoading(false);
       setError(signUpError.message);
       return;
     }
 
-    const pending: PendingSignup =
-      role === "owner" ? { role, displayName } : { role, displayName, inviteCode: inviteCode.trim() };
-
     if (!signUpData.session) {
       // Email confirmation is required on this Supabase project — signUp()
-      // doesn't log us in yet, so creating the household now would fail
-      // (auth.uid() is null with no active session). Save the choices and
-      // finish creating the household/profile on the first real login,
-      // once the user has confirmed their email (see app/login/page.tsx).
-      savePendingSignup(pending);
-      setLoading(false);
+      // doesn't log us in yet. Household/profile setup happens on
+      // /onboarding once there's an actual session (right after login,
+      // the (app) layout redirects any authenticated-but-profile-less
+      // user there automatically).
       setPendingConfirmation(true);
       return;
     }
 
-    const rpcError = await completeHouseholdSetup(supabase, pending);
-    setLoading(false);
-    if (rpcError) {
-      setError(rpcError);
-      return;
-    }
-    router.replace("/reports");
-    router.refresh();
+    router.replace("/onboarding");
   }
 
   if (pendingConfirmation) {
@@ -61,7 +45,7 @@ export default function SignupPage() {
         <div className="w-full max-w-sm card-glass rounded-[var(--radius-card)] p-6 text-white text-center">
           <h1 className="font-[family-name:var(--font-heebo)] text-2xl font-extrabold mb-3">נשלח מייל אישור</h1>
           <p className="text-sm text-white/80 mb-6">
-            שלחנו לכתובת {email} מייל אישור. אשר/י אותו, ואז חזור/י לכאן והתחבר/י — נשלים את ההרשמה אוטומטית בהתחברות הראשונה.
+            שלחנו לכתובת {email} מייל אישור. אשר/י אותו, ואז חזור/י לכאן והתחבר/י כדי להשלים את ההרשמה.
           </p>
           <Link href="/login" className="text-white font-bold underline">
             מעבר להתחברות
@@ -76,19 +60,11 @@ export default function SignupPage() {
       <div className="w-full max-w-sm card-glass rounded-[var(--radius-card)] p-6 text-white">
         <h1 className="font-[family-name:var(--font-heebo)] text-2xl font-extrabold mb-1">הרשמה</h1>
         <p className="text-sm text-white/70 mb-6">
-          הראשונ/ה שנרשמ/ת יוצר/ת את משק הבית כ&quot;בעלים&quot;. משתמש/ת שני/ה
-          מצטרפ/ת כ&quot;שותף/ה&quot; עם קוד ההזמנה שהבעלים משתפ/ת (אפשר למצוא
-          אותו במסך הדוחות לאחר ההרשמה).
+          לאחר יצירת החשבון תוכל/י לבחור אם את/ה &quot;בעלים&quot; (ראשונ/ה, יוצר/ת
+          את משק הבית) או &quot;שותף/ה&quot; (מצטרפ/ת עם קוד הזמנה).
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input
-            required
-            placeholder="שם מלא"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className="rounded-[var(--radius-button)] px-4 py-3 bg-white/90 text-ink placeholder:text-ink-3 outline-none"
-          />
           <input
             type="email"
             required
@@ -106,33 +82,6 @@ export default function SignupPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="rounded-[var(--radius-button)] px-4 py-3 bg-white/90 text-ink placeholder:text-ink-3 outline-none"
           />
-
-          <div className="flex gap-2 mt-1">
-            <button
-              type="button"
-              onClick={() => setRole("owner")}
-              className={`flex-1 rounded-[var(--radius-button)] py-2 font-bold ${role === "owner" ? "bg-primary text-white" : "bg-white/20"}`}
-            >
-              בעלים (ראשונ/ה)
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("partner")}
-              className={`flex-1 rounded-[var(--radius-button)] py-2 font-bold ${role === "partner" ? "bg-primary text-white" : "bg-white/20"}`}
-            >
-              שותף/ה
-            </button>
-          </div>
-
-          {role === "partner" && (
-            <input
-              required
-              placeholder="קוד הזמנה (מזהה משק הבית)"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              className="rounded-[var(--radius-button)] px-4 py-3 bg-white/90 text-ink placeholder:text-ink-3 outline-none"
-            />
-          )}
 
           {error && <p className="text-coral-light text-sm">{error}</p>}
 
