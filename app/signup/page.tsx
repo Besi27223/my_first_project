@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { completeHouseholdSetup, savePendingSignup, type PendingSignup } from "@/lib/pendingSignup";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function SignupPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [pendingConfirmation, setPendingConfirmation] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,40 +23,52 @@ export default function SignupPage() {
     setLoading(true);
     const supabase = createClient();
 
-    const { error: signUpError } = await supabase.auth.signUp({ email, password });
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
     if (signUpError) {
       setLoading(false);
       setError(signUpError.message);
       return;
     }
 
-    // Fresh sessions from signUp are already authenticated when email
-    // confirmation is disabled on the Supabase project (recommended for this
-    // 2-person household app).
-    if (role === "owner") {
-      const { error: rpcError } = await supabase.rpc("create_household_and_owner", {
-        p_display_name: displayName,
-      });
-      if (rpcError) {
-        setLoading(false);
-        setError("נרשמת בהצלחה אך יצירת משק הבית נכשלה: " + rpcError.message);
-        return;
-      }
-    } else {
-      const { error: rpcError } = await supabase.rpc("join_household", {
-        p_household_id: inviteCode.trim(),
-        p_display_name: displayName,
-      });
-      if (rpcError) {
-        setLoading(false);
-        setError("נרשמת בהצלחה אך ההצטרפות למשק הבית נכשלה: " + rpcError.message);
-        return;
-      }
+    const pending: PendingSignup =
+      role === "owner" ? { role, displayName } : { role, displayName, inviteCode: inviteCode.trim() };
+
+    if (!signUpData.session) {
+      // Email confirmation is required on this Supabase project — signUp()
+      // doesn't log us in yet, so creating the household now would fail
+      // (auth.uid() is null with no active session). Save the choices and
+      // finish creating the household/profile on the first real login,
+      // once the user has confirmed their email (see app/login/page.tsx).
+      savePendingSignup(pending);
+      setLoading(false);
+      setPendingConfirmation(true);
+      return;
     }
 
+    const rpcError = await completeHouseholdSetup(supabase, pending);
     setLoading(false);
+    if (rpcError) {
+      setError(rpcError);
+      return;
+    }
     router.replace("/reports");
     router.refresh();
+  }
+
+  if (pendingConfirmation) {
+    return (
+      <main className="app-gradient-bg min-h-dvh flex flex-col items-center justify-center px-6 py-10">
+        <div className="w-full max-w-sm card-glass rounded-[var(--radius-card)] p-6 text-white text-center">
+          <h1 className="font-[family-name:var(--font-heebo)] text-2xl font-extrabold mb-3">נשלח מייל אישור</h1>
+          <p className="text-sm text-white/80 mb-6">
+            שלחנו לכתובת {email} מייל אישור. אשר/י אותו, ואז חזור/י לכאן והתחבר/י — נשלים את ההרשמה אוטומטית בהתחברות הראשונה.
+          </p>
+          <Link href="/login" className="text-white font-bold underline">
+            מעבר להתחברות
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (
