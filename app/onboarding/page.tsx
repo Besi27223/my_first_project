@@ -57,8 +57,12 @@ export default function OnboardingPage() {
     }
 
     setLoading(false);
-    router.replace("/reports");
-    router.refresh();
+    // A client-side router.replace() here can reuse a cached /reports
+    // response from before the profile existed, bouncing straight back to
+    // /onboarding. Force a real navigation so the (app) layout's
+    // server-side profile check re-runs against the row we just created.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- deliberate hard navigation, see comment above
+    window.location.href = "/reports";
   }
 
   if (checkingAuth) return null;

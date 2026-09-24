@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,12 +21,13 @@ export default function LoginPage() {
       setError("אימייל או סיסמה שגויים");
       return;
     }
-    // If this account was never fully signed up (e.g. no household/profile
-    // yet — signup interrupted by email confirmation, or something failed
-    // before a session existed), the (app) layout's server-side check
-    // redirects to /onboarding to finish it before reaching /reports.
-    router.replace("/reports");
-    router.refresh();
+    // Full navigation, not the client-side router — this can follow a
+    // sign-in with an auth state the client Router Cache doesn't know
+    // about yet, and we need the (app) layout's server-side check
+    // (redirects to /onboarding if there's no household/profile yet) to
+    // run fresh.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- deliberate hard navigation, see comment above
+    window.location.href = "/reports";
   }
 
   return (
