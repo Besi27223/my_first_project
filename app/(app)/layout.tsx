@@ -26,7 +26,14 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
     // confirmation pending), or a household-creation step that never
     // completed (e.g. it failed before the user had a session at all).
     // Send them to finish that instead of leaving the app broken/empty.
-    const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profileError) {
+      console.error("(app) layout: profile lookup failed for user", user.id, profileError);
+    }
     if (!profile) {
       redirect("/onboarding");
     }
